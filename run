@@ -6,7 +6,7 @@ require_relative 'multi_stalker.rb'
 
 OptionParser.new do |o|
   o.on('--search=s') { |b| $searches = b }
-  o.on('--pages=p') { |b| $pages = b }
+  o.on('--pages=p') { |b| $pages = b.to_i }
   o.on('--exclude-domains=ed') { |b| $excludes = b }
   o.parse!
 end
