@@ -21,7 +21,7 @@ class Stalker
       results_lis = results_div.find_elements(class: 'g')
 
       extract_urls(results_lis)
-      goto_next_page
+      goto_next_page rescue break
       wait_for_loading
     end
   end
@@ -92,8 +92,12 @@ class Stalker
 
   def goto_next_page
     # Click on next page link
-    next_page_link = @driver.find_element(:id, 'pnnext')
-    next_page_link.click
+    begin
+      next_page_link = @driver.find_element(:id, 'pnnext')
+      next_page_link.click
+    rescue Selenium::WebDriver::Error::NoSuchElementError
+      raise "No pages left..."
+    end
   end
 
   def wait_for_loading
