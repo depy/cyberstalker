@@ -5,20 +5,33 @@ require_relative 'stalker.rb'
 require_relative 'multi_stalker.rb'
 
 OptionParser.new do |o|
-  o.on('--search=s') { |b| $searches = b }
-  o.on('--pages=p') { |b| $pages = b.to_i }
-  o.on('--exclude-domains=ed') { |b| $excludes = b }
+  o.banner = "Usage: ./run --search='car wash','stargate sg1' --exclude-domains=carwash.com,sg1.com --pages=5"
+
+  o.on('--search=s') do |b|
+    $searches = b if b.split(',').count > 0
+  end
+
+  o.on('--pages=p') do |b|
+    $pages = b.to_i if b.to_i >= 1
+  end
+
+  o.on('--exclude-domains=ed') do |b|
+    $excludes = b.empty? ? [] : b.split(',')
+  end
+
   o.parse!
 end
 
-search_terms = []
+if $searches && $pages
+  search_terms = []
 
-$searches.split(',').each {|search|
-  search_terms << {
-    keywords: search,
-    exclude_domains: $excludes.split(',')
+  $searches.split(',').each {|search|
+    search_terms << {
+      keywords: search,
+      exclude_domains: $excludes || []
+    }
   }
-}
 
-multi_stalkers = MultiStalker.new(search_terms, $pages)
-multi_stalkers.run
+  multi_stalkers = MultiStalker.new(search_terms, $pages)
+  multi_stalkers.run
+end
