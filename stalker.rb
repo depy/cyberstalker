@@ -66,11 +66,11 @@ class Stalker
   def initiate_search
     # Go to google
     @driver.navigate.to 'http://google.com'
-    sleep(2)
+    sleep(1)
     # Put search string in input box
     element = @driver.find_element(:name, 'q')
     element.send_keys @search_string
-    sleep(2)
+    sleep(1)
     element.submit
   end
 
