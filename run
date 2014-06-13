@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require_relative 'stalker.rb'
+require_relative 'multi_stalker.rb'
+
+OptionParser.new do |o|
+  o.on('--search=s') { |b| $searches = b }
+  o.on('--pages=p') { |b| $pages = b }
+  o.on('--exclude-domains=ed') { |b| $excludes = b }
+  o.parse!
+end
+
+search_terms = []
+
+$searches.split(',').each {|search|
+  search_terms << {
+    keywords: search,
+    exclude_domains: $excludes.split(',')
+  }
+}
+
+multi_stalkers = MultiStalker.new(search_terms, $pages)
+multi_stalkers.run

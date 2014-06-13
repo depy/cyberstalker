@@ -1,5 +1,3 @@
-require_relative 'stalker.rb'
-
 class MultiStalker
   def initialize(search_terms, num_pages = 10)
     @search_terms = search_terms
@@ -8,9 +6,14 @@ class MultiStalker
   end
 
   def run()
-    release_stalkers
-    join_threads
-    stop_stalking
+    begin
+      release_stalkers
+      join_threads
+      stop_stalking
+    rescue Exception => e
+      p e
+      stop_stalking
+    end
   end
 
 
@@ -26,7 +29,6 @@ class MultiStalker
   def release_stalkers
     for i in 0..@search_terms.length-1
       Thread.new(i) do |n|
-        # Wait for captcha, delay =  6 * number of browser instances
         stalker = Stalker.new(@search_terms[n][:keywords], @num_pages, wait_timeout)
         stalker.exclude_domains(@search_terms[n][:exclude_domains])
 
@@ -38,7 +40,7 @@ class MultiStalker
 
   def stop_stalking
     @stalkers.each do |stalker|
-      p stalker.results
+      p stalker.results unless stalker.results.empty?
       stalker.quit
     end
   end

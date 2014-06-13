@@ -3,7 +3,7 @@ require 'selenium-webdriver'
 
 class Stalker
 
-  def initialize(search_string, num_pages = 10, wait_timeout = 10)
+  def initialize(search_string, num_pages = 10, wait_timeout = 3)
     @search_string = search_string
     @num_pages = num_pages
     @urls = []
@@ -12,17 +12,23 @@ class Stalker
   end
 
   def run
-    initiate_searh
-    wait_for_captcha
-    @wait.until { @driver.find_element(id: 'ires' ).displayed? }
+    initiate_search
 
-    @num_pages.times do
-      results_div = @driver.find_element(:id, 'ires')
-      results_lis = results_div.find_elements(class: 'g')
+    i = 0
+    while i < @num_pages do
+      begin
+        @wait.until { @driver.find_element(id: 'ires' ).displayed? }
+        results_div = @driver.find_element(:id, 'ires')
+        results_lis = results_div.find_elements(class: 'g')
 
-      extract_urls(results_lis)
-      goto_next_page rescue break
-      wait_for_loading
+        extract_urls(results_lis)
+        goto_next_page rescue break
+        wait_for_loading
+        i += 1
+      rescue Selenium::WebDriver::Error::NoSuchElementError
+        p 'Checking for captcha...'
+        wait_for_captcha
+      end
     end
   end
 
@@ -41,7 +47,6 @@ class Stalker
   end
 
 
-
   private
 
   def setup
@@ -58,13 +63,14 @@ class Stalker
     end.uniq
   end
 
-  def initiate_searh
+  def initiate_search
     # Go to google
     @driver.navigate.to 'http://google.com'
-
+    sleep(2)
     # Put search string in input box
     element = @driver.find_element(:name, 'q')
     element.send_keys @search_string
+    sleep(2)
     element.submit
   end
 
@@ -96,7 +102,8 @@ class Stalker
       next_page_link = @driver.find_element(:id, 'pnnext')
       next_page_link.click
     rescue Selenium::WebDriver::Error::NoSuchElementError
-      raise "No pages left..."
+      p 'No pages left...'
+      raise 'No pages left...'
     end
   end
 
